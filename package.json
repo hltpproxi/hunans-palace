@@ -1,0 +1,19 @@
+{
+  "name": "hunans-palace",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jhu7235/hunans-palace.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jhu7235/hunans-palace/issues"
+  },
+  "homepage": "https://github.com/jhu7235/hunans-palace#readme"
+}
