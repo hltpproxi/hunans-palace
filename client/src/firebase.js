@@ -2,12 +2,12 @@ import Firebase from 'firebase';
 import '@firebase/firestore';
 
 const config = {
-  apiKey: 'AIzaSyB8vEp5AYZajpqvZ-SJxU_Y9-xgKlYsnsI',
-  authDomain: 'hunans-palace-1435b.firebaseapp.com',
-  databaseURL: 'https://hunans-palace-1435b.firebaseio.com',
-  projectId: 'hunans-palace-1435b',
-  storageBucket: 'hunans-palace-1435b.appspot.com',
-  messagingSenderId: '454131544122',
+  apiKey: 'AIzaSyBfjK9qLKyjWSVdYcqEp3c4JGf_-MZJURY',
+  authDomain: 'hunans-palace-menu.firebaseapp.com',
+  databaseURL: 'https://hunans-palace-menu.firebaseio.com',
+  projectId: 'hunans-palace-menu',
+  storageBucket: 'hunans-palace-menu.appspot.com',
+  messagingSenderId: '260143000503'
 };
 
 export const firebaseApp = Firebase.initializeApp(config);
