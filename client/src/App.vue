@@ -18,6 +18,18 @@ export default {
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  margin-top: 60px;
+  padding-top: 60px;
+  padding-bottom: 40px;
+}
+
+body {
+  background: -webkit-linear-gradient(left, #FF0005, #ffbe6a);
+  background: -o-linear-gradient(right, #FF0005, #ffbe6a);
+  background: -moz-linear-gradient(right, #FF0005, #ffbe6a);
+  background: linear-gradient(to right, #FF0005, #ffbe6a);
+}
+
+html {
+  background: orange;
 }
 </style>

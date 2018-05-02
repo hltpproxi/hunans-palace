@@ -7,7 +7,7 @@ const config = {
   databaseURL: 'https://hunans-palace-menu.firebaseio.com',
   projectId: 'hunans-palace-menu',
   storageBucket: 'hunans-palace-menu.appspot.com',
-  messagingSenderId: '260143000503'
+  messagingSenderId: '260143000503',
 };
 
 export const firebaseApp = Firebase.initializeApp(config);
