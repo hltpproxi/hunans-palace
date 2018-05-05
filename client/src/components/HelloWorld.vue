@@ -1,7 +1,9 @@
 <template>
   <div class="hello">
-    <h1><b>{{ msg }} 明園</b></h1>
+    <!-- {{restaurant.name}} -->
+    <h1><b>Welcome to {{restaurant ? restaurant.name : '' }}</b></h1>
     <h2>Menu</h2>
+    <v-btn v-on:click="createTestRestaurant">Create Test Restaurant</v-btn>
     <v-flex
       sm10 offset-sm1
       xs12 offset-xs0>
@@ -13,37 +15,51 @@
         xs12 offset-xs0
         >
         <h1>{{ section.name }}</h1>
-        <v-layout row>
-          <v-flex xs>
+        <v-layout xsrow>
+          <v-flex xs12 m6>
             <!-- <p class="text-xs-left">{{ item.name }}</p> -->
           </v-flex>
-          <v-flex xs3>
+          <v-flex xs6 m3>
             <span><b>Small</b></span>
           </v-flex>
-          <v-flex xs3>
+          <v-flex xs6 m3>
             <span><b>Large</b></span>
           </v-flex>
         </v-layout>
         <v-flex class="item" v-for="item in section" v-if="item.name" :key="item.name">
           <v-layout row>
-            <v-flex xs>
+            <v-flex xs12 m6>
               <p class="text-xs-left item-name">{{ item.name }}</p>
             </v-flex>
-            <v-flex xs3>
-              <v-btn small icon v-on:click="remove($event, item, 'small')">
+            <v-flex xs6 m3>
+              <v-btn v-show="!isAdmin" small icon v-on:click="remove($event, item, 'small')">
                 <v-icon>remove</v-icon>
               </v-btn>
-              <span>{{ item.price_sm }}</span>
-              <v-btn small icon v-on:click="add($event, item, 'large')">
+              <span v-show="!isAdmin" >{{ item.price_sm }}</span>
+              <v-text-field
+                v-show="isAdmin"
+                name="input-1"
+                v-model="item.price_sm"
+                v-on:blur="updateMenuItem(item, 'PRICE_SMALL')"
+                id="testing"
+              ></v-text-field>
+              <v-btn v-show="!isAdmin" small icon v-on:click="add($event, item, 'large')">
                 <v-icon>add</v-icon>
               </v-btn>
             </v-flex>
-            <v-flex xs3>
-              <v-btn small icon v-on:click="remove($event, item, 'small')">
+            <v-flex xs6 m3>
+              <v-btn v-show="!isAdmin" small icon v-on:click="remove($event, item, 'small')">
                 <v-icon>remove</v-icon>
               </v-btn>
-              <span>{{ item.price_lg }}</span>
-              <v-btn small icon v-on:click="add($event, item, 'large')">
+              <v-text-field
+                v-show="isAdmin"
+                name="input-1"
+                v-model="item.price_lg"
+                v-on:blur="updateMenuItem(item, 'PRICE_LARGE')"
+                id="testing"
+              ></v-text-field>
+              <span v-show="!isAdmin" >{{ item.price_lg }}</span>
+              <v-btn v-show="!isAdmin" small icon v-on:click="add($event, item, 'large')">
                 <v-icon>add</v-icon>
               </v-btn>
             </v-flex>
@@ -58,8 +74,8 @@
         </v-layout>
       </v-card>
       <v-flex xs>
-        <v-btn dark fab small color="blue">
-          <v-icon>add</v-icon>
+        <v-btn v-show="isAdmin" dark fab small color="blue">
+          <v-icon on:click="addMenuSection">add</v-icon>
         </v-btn>
       </v-flex>
     </v-flex>
@@ -67,35 +83,80 @@
 </template>
 
 <script>
-import { firestore } from '../firebase';
+import firebase, { firestore } from '../firebase';
+import { state } from '../main';
+
+function logger(data) {
+  const keys = Object.keys(data);
+  console.log(`~!~!~!~!~ ${keys} ~!~!~!~!~\n`, data[keys[0]]);
+}
 
 export default {
   name: 'HelloWorld',
   data() {
     return {
-      menu: [{
-        name: 'section_name',
-        item: [{
-          name: 'item_name',
-          price: 'item_price',
-        }],
-      }],
       msg: "Welcome to Hunan's Palace",
       isAdmin: true,
+      restaurant: null,
+      showAddSection: false,
+      menu: {},
     };
   },
   mounted() {
-    console.log('menu', this.menu);
+    firestore
+      .collection('restaurants')
+      .doc('test_restaurant')
+      .get()
+      .then((restaurantSnap) => {
+        const restaurant = restaurantSnap.data();
+        // console.log({restaurant })
+        this.restaurant = restaurant;
+      });
+    logger({ menu: this.menu });
   },
-  firestore() {
-    const menu = firestore.collection('menu');
-    console.log(menu);
-    return {
-      menu,
-    };
-  },
-  methods: {
+  // firestore() {
+  //   // console.log('where menu', menu);
 
+  //   return {
+  //     menu,
+  //   };
+  // },
+  methods: {
+    createTestRestaurant() {
+      firestore.collection('restaurants').doc('test_restaurant').set({
+        name: 'test restaurant',
+        address: '',
+        admins: ['admin1@test.com', 'admin2@test.com', 'admin3@test.com'],
+        owner: 'admin1@test.com',
+      });
+      firestore.collection('menus').doc('test_restaurant').set({
+        restaurant: 'test_restaurant',
+        sections: [],
+      });
+      firestore.collection('menuSections').add({
+        menuItems: []
+      });
+      firestore.collection('menuItems').add({
+        name: 'moo shoo chicken',
+        price: {
+          small: 9.5,
+          large: 13.5,
+        },
+      }).then(menuItemSnap => {});
+    },
+    addSection() {
+
+    },
+    updateMenuItem() {
+
+    },
+    toggleAddSection() {
+      this.showAddSection = !this.showAddSection;
+    },
+    addMenuSection() {
+      this.$firestore.collection('section').doc('init').set({ init: 'init' });
+      this.$firestore.collection('section').set({ items: [] });
+    },
   },
 };
 </script>

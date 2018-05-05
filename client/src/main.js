@@ -4,19 +4,43 @@ import Vue from 'vue';
 import Vuetify from 'vuetify';
 import VueFirestore from 'vue-firestore';
 import 'vuetify/dist/vuetify.min.css';
+import { firestore/* , authentication */ } from './firebase';
 
 import App from './App';
 import router from './router';
 
 Vue.config.productionTip = false;
 
-Vue.use(VueFirestore);
 Vue.use(Vuetify);
+Vue.use(VueFirestore);
+
+function logger(data) {
+  const keys = Object.keys(data);
+  console.log(`~!~!~!~!~ ${keys} ~!~!~!~!~\n`, data[keys[0]]);
+}
+/* premature way of implementing a state management */
+const state = { };
 
 /* eslint-disable no-new */
 new Vue({
   el: '#app',
   router,
-  components: { App },
-  template: '<App/>',
+  firestore() {
+    const restaurant = firestore.collection('restaurants').doc('test_restaurant');
+    const menu = firestore.collection('menus').where('restaurant', '==', restaurant.id);
+    return {
+      restaurant,
+      menu,
+    };
+  },
+  mounted() {
+    state.menu = this.menu;
+    logger({ this: this });
+  },
+  render: h => h(App),
 });
+
+
+/* this should be moved to somewhere else */
+/* eslint-disable-next-line import/prefer-default-export */
+export { state };
