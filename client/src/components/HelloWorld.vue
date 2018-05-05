@@ -75,7 +75,7 @@
       </v-card>
       <v-flex xs>
         <v-btn v-show="isAdmin" dark fab small color="blue">
-          <v-icon on:click="addMenuSection">add</v-icon>
+          <v-icon on:click="addSection">add</v-icon>
         </v-btn>
       </v-flex>
     </v-flex>
@@ -94,12 +94,14 @@ function logger(data) {
 export default {
   name: 'HelloWorld',
   data() {
+    logger({ stateMenu: state.menu})
+
     return {
-      msg: "Welcome to Hunan's Palace",
       isAdmin: true,
       restaurant: null,
       showAddSection: false,
-      menu: {},
+      menu: state.menu,
+      menuSections: []
     };
   },
   mounted() {
@@ -112,8 +114,21 @@ export default {
         // console.log({restaurant })
         this.restaurant = restaurant;
       });
-    logger({ menu: this.menu });
+    logger({ thisMenu: this.menu });
+    // this.menuSections = firestore
+    //   .collection('menuSections')
+    //   .where('menu', '==', this.menu['.key']);
+    /* getSection */
   },
+  // computed: {
+  //   menu: function() {
+  //     if(this.menu) {
+  //       this.menuSections = firestore
+  //         .collection('menuSections')
+  //         .where('menu', '==', this.menu['.key']);
+  //     }
+  //   },
+  // },
   methods: {
     createTestRestaurant() {
       firestore.collection('restaurants').doc('test_restaurant').set({
@@ -122,13 +137,7 @@ export default {
         admins: ['admin1@test.com', 'admin2@test.com', 'admin3@test.com'],
         owner: 'admin1@test.com',
       });
-      firestore.collection('menus').doc('test_restaurant').set({
-        restaurant: 'test_restaurant',
-        sections: [],
-      });
-      firestore.collection('menuSections').add({
-        menuItems: []
-      });
+
       firestore.collection('menuItems').add({
         name: 'moo shoo chicken',
         price: {
@@ -137,8 +146,19 @@ export default {
         },
       }).then(menuItemSnap => {});
     },
+    addMenu() {
+      firestore.collection('menus').doc('test_restaurant').set({
+        restaurant: 'test_restaurant',
+        sections: [],
+      });
+    },
     addSection() {
-
+      console.log('adding new section');
+      
+      firestore.collection('menuSections').add({
+        menuItems: [],
+        menu: this.menu.key
+      });
     },
     updateMenuItem() {
 
