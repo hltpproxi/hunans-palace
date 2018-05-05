@@ -83,7 +83,7 @@
 </template>
 
 <script>
-import firebase, { firestore } from '../firebase';
+import { firestore } from '../firebase';
 import { state } from '../main';
 
 function logger(data) {
@@ -114,13 +114,6 @@ export default {
       });
     logger({ menu: this.menu });
   },
-  // firestore() {
-  //   // console.log('where menu', menu);
-
-  //   return {
-  //     menu,
-  //   };
-  // },
   methods: {
     createTestRestaurant() {
       firestore.collection('restaurants').doc('test_restaurant').set({
