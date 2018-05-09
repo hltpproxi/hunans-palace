@@ -67,7 +67,7 @@
         </v-flex>
         <v-layout v-show="isAdmin" row>
           <v-flex xs>
-            <v-btn dark fab small color="blue">
+            <v-btn dark fab small color="blue" v-on:click="addItem(menuSection)">
               <v-icon>add</v-icon>
             </v-btn>
           </v-flex>
@@ -142,14 +142,20 @@ export default {
         name: 'Chicken',
       });
     },
-    addItem() {
+    addItem(menuSection) {
+      console.log({menuSection});
+      console.log(menuSection['.key']);
+      
       firestore.collection('menuItems').add({
-        name: 'moo shoo chicken',
+        restaurant: this.restaurantDocRef.id,
+        menu: this.menu[0]['.key'],
+        menuSection: menuSection['.key'],
+        name: '',
         price: {
-          small: 9.5,
-          large: 13.5,
+          small: 20,
+          large: 20,
         },
-        ingredients: [],
+        ingredients: [''],
       }).then((menuItemSnap) => {});
     },
     updateMenuItem() {
