@@ -28,17 +28,19 @@ new Vue({
   firestore() {
     const restaurant = firestore.collection('restaurants').doc('test_restaurant');
     const menu = firestore.collection('menus').where('restaurant', '==', restaurant.id);
-    // const menuSections = firestore
-    //   .collection('menuSections')
-    //   .where('restaurant', '==', restaurant.id);
+    const menuSections = firestore
+      .collection('menuSections')
+      .where('restaurant', '==', restaurant.id);
     return {
       restaurant,
       menu,
-      // menuSections,
+      menuSections,
     };
   },
   created() {
     state.menu = this.menu;
+    // state.restaurant = this.restaurant;
+    state.menuSections = this.menuSections;
     // state.menu.sections = this.menuSections;
     logger({ this: this });
   },

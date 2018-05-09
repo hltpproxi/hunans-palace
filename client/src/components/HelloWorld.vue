@@ -9,12 +9,12 @@
       xs12 offset-xs0>
       <v-card
         class="beige"
-        v-for="section in menu"
-        :key="section.id"
+        v-for="menuSection in menuSections"
+        :key="menuSection.key"
         sm10 offset-sm1
         xs12 offset-xs0
         >
-        <h1>{{ section.name }}</h1>
+        <h1>{{ menuSection.name }}</h1>
         <v-layout xsrow>
           <v-flex xs12 m6>
             <!-- <p class="text-xs-left">{{ item.name }}</p> -->
@@ -26,7 +26,7 @@
             <span><b>Large</b></span>
           </v-flex>
         </v-layout>
-        <v-flex class="item" v-for="item in section" v-if="item.name" :key="item.name">
+        <v-flex class="item" v-for="item in menuSection" v-if="item.name" :key="item.name">
           <v-layout row>
             <v-flex xs12 m6>
               <p class="text-xs-left item-name">{{ item.name }}</p>
@@ -74,8 +74,8 @@
         </v-layout>
       </v-card>
       <v-flex xs>
-        <v-btn v-show="isAdmin" dark fab small color="blue">
-          <v-icon on:click="addSection">add</v-icon>
+        <v-btn v-show="isAdmin" dark fab small color="blue" v-on:click="addSection">
+          <v-icon>add</v-icon>hi
         </v-btn>
       </v-flex>
     </v-flex>
@@ -94,41 +94,28 @@ function logger(data) {
 export default {
   name: 'HelloWorld',
   data() {
-    logger({ stateMenu: state.menu})
-
+    logger({ stateMenu: state.menu });
+    logger({ stateMenuSections: state.menuSections });
+    logger({ stateRestaurant: state.restaurant });
     return {
       isAdmin: true,
-      restaurant: null,
+      restaurant: state.restaurant,
       showAddSection: false,
       menu: state.menu,
-      menuSections: []
+      menuSections: state.menuSections,
+      restaurantDocRef: null,
     };
   },
   mounted() {
-    firestore
-      .collection('restaurants')
-      .doc('test_restaurant')
-      .get()
+    this.restaurantDocRef = firestore.collection('restaurants').doc('test_restaurant');
+    this.restaurantDocRef.get()
       .then((restaurantSnap) => {
         const restaurant = restaurantSnap.data();
         // console.log({restaurant })
         this.restaurant = restaurant;
       });
-    logger({ thisMenu: this.menu });
-    // this.menuSections = firestore
-    //   .collection('menuSections')
-    //   .where('menu', '==', this.menu['.key']);
-    /* getSection */
   },
-  // computed: {
-  //   menu: function() {
-  //     if(this.menu) {
-  //       this.menuSections = firestore
-  //         .collection('menuSections')
-  //         .where('menu', '==', this.menu['.key']);
-  //     }
-  //   },
-  // },
+
   methods: {
     createTestRestaurant() {
       firestore.collection('restaurants').doc('test_restaurant').set({
@@ -137,15 +124,8 @@ export default {
         admins: ['admin1@test.com', 'admin2@test.com', 'admin3@test.com'],
         owner: 'admin1@test.com',
       });
-
-      firestore.collection('menuItems').add({
-        name: 'moo shoo chicken',
-        price: {
-          small: 9.5,
-          large: 13.5,
-        },
-      }).then(menuItemSnap => {});
     },
+
     addMenu() {
       firestore.collection('menus').doc('test_restaurant').set({
         restaurant: 'test_restaurant',
@@ -153,22 +133,29 @@ export default {
       });
     },
     addSection() {
-      console.log('adding new section');
-      
+      console.log('adding new menuSection', this.menu[0]['.key'], this.restaurantDocRef.id);
+
       firestore.collection('menuSections').add({
         menuItems: [],
-        menu: this.menu.key
+        menu: this.menu[0]['.key'],
+        restaurant: this.restaurantDocRef.id,
+        name: 'Chicken',
       });
     },
+    addItem() {
+      firestore.collection('menuItems').add({
+        name: 'moo shoo chicken',
+        price: {
+          small: 9.5,
+          large: 13.5,
+        },
+        ingredients: [],
+      }).then((menuItemSnap) => {});
+    },
     updateMenuItem() {
-
     },
     toggleAddSection() {
       this.showAddSection = !this.showAddSection;
-    },
-    addMenuSection() {
-      this.$firestore.collection('section').doc('init').set({ init: 'init' });
-      this.$firestore.collection('section').set({ items: [] });
     },
   },
 };
