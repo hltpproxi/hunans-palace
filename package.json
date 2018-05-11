@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/jhu7235/hunans-palace/issues"
   },
-  "homepage": "https://github.com/jhu7235/hunans-palace#readme"
+  "homepage": "https://github.com/jhu7235/hunans-palace#readme",
+  "dependencies": {
+    "bluebird": "^3.5.1"
+  }
 }
