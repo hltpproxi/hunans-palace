@@ -102,12 +102,13 @@
 </template>
 
 <script>
+import Promise from 'bluebird';
 import { firestore } from '../firebase';
 import { state } from '../main';
-import Promise from 'bluebird';
 
 function logger(data) {
   const keys = Object.keys(data);
+  /* eslint-disable-next-line */
   console.log(`~!~!~!~!~ ${keys} ~!~!~!~!~\n`, data[keys[0]]);
 }
 
@@ -154,9 +155,8 @@ export default {
       .then((data) => {
         this.menu = data[0];
       })
-      .then(() => {
-        const sections = this.menu.sections;
-        return Promise.map(this.menu.sections, sectionId =>
+      .then(() =>
+        Promise.map(this.menu.sections, sectionId =>
           firestore.doc(`menuSections/${sectionId}`).get())
           .then((sections) => {
             const data = sections.map((section) => {
@@ -165,20 +165,20 @@ export default {
               return sectionData;
             });
             this.menuSections = data;
-          });
-      })
-      .then(() => Promise.map(this.menuSections, menuSection =>
-        Promise.map(menuSection.menuItems, itemId =>
-          firestore.doc(`menuItems/${itemId}`).get())
-          .then((items) => {
-            const data = items.map((item) => {
-              const itemData = item.data();
-              itemData.id = item.id;
-              return itemData;
-            });
-            menuSection.items = data;
-            return data;
-          })))
+          }))
+      .then(() =>
+        Promise.map(this.menuSections, menuSection =>
+          Promise.map(menuSection.menuItems, itemId =>
+            firestore.doc(`menuItems/${itemId}`).get())
+            .then((items) => {
+              const data = items.map((item) => {
+                const itemData = item.data();
+                itemData.id = item.id;
+                return itemData;
+              });
+              menuSection.items = data;
+              return data;
+            })))
       .then((data) => {
         const tempSections = this.menuSections.map((menuSection, index) => {
           menuSection.items = data[index];
@@ -218,7 +218,9 @@ export default {
           .collection('menus')
           .doc(this.menu.id)
           .update({ sections: [...this.menu.sections, section.id] }))
-        .then(() => this.showMenu = true);
+        .then(() => {
+          this.showMenu = true;
+        });
     },
     addItem(menuSection) {
       const sectionId = menuSection.id;

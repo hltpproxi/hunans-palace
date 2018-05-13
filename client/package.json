@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@firebase/firestore": "^0.3.5",
+    "bluebird": "^3.5.1",
     "firebase": "^4.11.0",
     "vue": "^2.5.2",
     "vue-firestore": "^0.2.6",
