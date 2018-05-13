@@ -3,7 +3,7 @@
     <!-- {{restaurant.name}} -->
     <h1><b>Welcome to {{restaurant ? restaurant.name : 'our restaurant' }}</b></h1>
     <h2>Menu</h2>
-    <v-btn v-on:click="createTestRestaurant">Create Test Restaurant</v-btn>
+    <!-- <v-btn v-on:click="createTestRestaurant">Create Test Restaurant</v-btn> -->
     <v-switch :label="`admin switch`" v-model="isAdmin"></v-switch>
     <!-- {{menu}} -->
     <v-flex
