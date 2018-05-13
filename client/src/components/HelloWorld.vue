@@ -1,39 +1,49 @@
 <template>
   <div class="hello">
     <!-- {{restaurant.name}} -->
-    <h1><b>Welcome to {{restaurant ? restaurant.name : '' }}</b></h1>
+    <h1><b>Welcome to {{restaurant ? restaurant.name : 'our restaurant' }}</b></h1>
     <h2>Menu</h2>
     <v-btn v-on:click="createTestRestaurant">Create Test Restaurant</v-btn>
+    <v-switch :label="`admin switch`" v-model="isAdmin"></v-switch>
     <!-- {{menu}} -->
     <v-flex
       sm10 offset-sm1
       xs12 offset-xs0>
       <v-card
+        v-if="showMenu"
         class="beige"
         v-for="(menuSection, key) in menuSections"
         :key="menuSection.key"
         sm10 offset-sm1
         xs12 offset-xs0
         >
-        <h1>{{ menuSection.name }}</h1>
+        <h1 v-show="!isAdmin">{{ menuSection.name }}</h1>
+        <v-text-field
+          v-show="isAdmin"
+          name="input-section-name"
+          v-model="menuSection.name"
+          v-on:blur="updateMenuSections(menuSection,'name')"
+          id="testing"
+        ></v-text-field>
         <v-layout xsrow>
           <v-flex xs12 m6>
             <!-- <p class="text-xs-left">{{ item.name }}</p> -->
           </v-flex>
           <v-flex xs6 m3>
-            <span><b>Small</b></span>
+            <span class="text-lg-right"><b class="text-lg-right">Small</b></span>
           </v-flex>
           <v-flex xs6 m3>
             <span><b>Large</b></span>
           </v-flex>
         </v-layout>
         <v-flex class="item" v-for="item in menuSection.items" v-if="item" :key="item.id">
-          {{item}}
+          <!-- {{item}} -->
           <v-layout row>
             <v-flex xs12 m6>
+              <span v-show="!isAdmin">{{ item.name }}</span>
               <v-text-field
                 v-show="isAdmin"
-                name="input-1"
+                name="input-item-name"
                 v-model="item.name"
                 v-on:blur="updateMenuItem(item,'name')"
                 id="testing"
@@ -47,7 +57,7 @@
               <span v-show="!isAdmin" >{{ item.price.small }}</span>
               <v-text-field
                 v-show="isAdmin"
-                name="input-1"
+                name="input-price-small"
                 v-model="item.price.small"
                 v-on:blur="updateMenuItem(item, 'price')"
                 id="testing"
@@ -62,7 +72,7 @@
               </v-btn>
               <v-text-field
                 v-show="isAdmin"
-                name="input-1"
+                name="input-price-large"
                 v-model="item.price.large"
                 v-on:blur="updateMenuItem(item, 'price')"
                 id="testing"
@@ -109,13 +119,13 @@ function queryToArray(query) {
     array.push(data);
   });
   return array;
-};
+}
 
 function getByRestaurant(collection, restaurantId) {
   return firestore
     .collection(collection)
     .where('restaurant', '==', restaurantId)
-    .get()
+    .get();
 }
 
 export default {
@@ -129,6 +139,7 @@ export default {
       menu,
       menuSections: [],
       restaurantDocRef: null,
+      showMenu: true,
     };
   },
   mounted() {
@@ -138,47 +149,44 @@ export default {
         const restaurant = restaurantSnap.data();
         this.restaurant = restaurant;
       });
-    const menu = getByRestaurant('menus', 'test_restaurant')
+    getByRestaurant('menus', this.restaurantDocRef.id)
       .then(queryToArray)
-      .then(data => {
-        this.menu = data[0]
+      .then((data) => {
+        this.menu = data[0];
       })
       .then(() => {
         const sections = this.menu.sections;
         return Promise.map(this.menu.sections, sectionId =>
           firestore.doc(`menuSections/${sectionId}`).get())
-          .then(sections => {
-            const data = sections.map(section => {
-              const sectionData = section.data()
+          .then((sections) => {
+            const data = sections.map((section) => {
+              const sectionData = section.data();
               sectionData.id = section.id;
               return sectionData;
             });
             this.menuSections = data;
-          })
+          });
       })
-      .then(() => {
-        return Promise.map(this.menuSections, menuSection =>
-          Promise.map(menuSection.menuItems, itemId =>
-            firestore.doc(`menuItems/${itemId}`).get())
-            .then(items => {
-              const data = items.map(item => {
-                const itemData = item.data();
-                itemData.id = item.id;
-                return itemData;
-              });
-              menuSection.items = data;
-              return data;
-            }))
-      })
-      .then(data => {
+      .then(() => Promise.map(this.menuSections, menuSection =>
+        Promise.map(menuSection.menuItems, itemId =>
+          firestore.doc(`menuItems/${itemId}`).get())
+          .then((items) => {
+            const data = items.map((item) => {
+              const itemData = item.data();
+              itemData.id = item.id;
+              return itemData;
+            });
+            menuSection.items = data;
+            return data;
+          })))
+      .then((data) => {
         const tempSections = this.menuSections.map((menuSection, index) => {
           menuSection.items = data[index];
           return menuSection;
-        })
-        logger({menuSections: this.menuSections})
-        logger({tempSections});
+        });
+        logger({ menuSections: this.menuSections });
+        logger({ tempSections });
         this.menuSections = tempSections;
-        // console.log(this.menuSections)
       });
   },
 
@@ -199,16 +207,18 @@ export default {
       });
     },
     addSection() {
+      this.showMenu = false;
       firestore.collection('menuSections').add({
         menuItems: [],
         menu: this.menu.id,
         restaurant: this.restaurantDocRef.id,
         name: 'New Section',
       })
-      .then(section => firestore
+        .then(section => firestore
           .collection('menus')
           .doc(this.menu.id)
-          .update({ sections: [...this.menu.sections, section.id] }));
+          .update({ sections: [...this.menu.sections, section.id] }))
+        .then(() => this.showMenu = true);
     },
     addItem(menuSection) {
       const sectionId = menuSection.id;
@@ -224,19 +234,25 @@ export default {
         },
         ingredients: [''],
       })
-      .then((item) =>
-        firestore
-          .collection('menuSections')
-          .doc(sectionId)
-          .update({
-            menuItems: [...menuSection.menuItems, item.id]
-          }));
+        .then(item =>
+          firestore
+            .collection('menuSections')
+            .doc(sectionId)
+            .update({
+              menuItems: [...menuSection.menuItems, item.id],
+            }));
     },
     updateMenuItem(item, field) {
-      logger({item})
-      const data = {}
-      data[field] = item[field]
+      logger({ item });
+      const data = {};
+      data[field] = item[field];
       firestore.collection('menuItems').doc(item.id).update(data);
+    },
+    updateMenuSections(section, field) {
+      logger({ section });
+      const data = {};
+      data[field] = section[field];
+      firestore.collection('menuSection').doc(section.id).update(data);
     },
     toggleAddSection() {
       this.showAddSection = !this.showAddSection;
